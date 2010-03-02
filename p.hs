@@ -53,16 +53,6 @@ sumaRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) =
     (NoNeg x y base1)
 	where (x,y) = adicion x1 y1 x2 y2 base1
 
-{- viejo
-sumaRA::RealArbitrario -> RealArbitrario -> RealArbitrario
-sumaRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) = 
-    (NoNeg x y base1)
-	where {
-	  (y,z) = adicionFrac y1 y2 base1 ;
-	  x = adicionEnt x1 x2 base1 z
-	}
--}
-
 sumaRA (Neg (x:xs) (y:ys) base1) (Neg (z:zs) (w:ws) base2) = 
     convertir (sumaRA (NoNeg (x:xs) (y:ys) base1) (NoNeg (z:zs) (w:ws) base2))
 
@@ -130,28 +120,12 @@ acarreoMult s base
     | s >= base = s `div` base
     | otherwise = 0
 
-{-
-multiNumFrac::[Int] -> Int -> Int -> ([Int],Int)
-multiNumFrac [] n base = ([],0)
-multiNumFrac (x:xs) n base =
-    ([(x * n + ac) `mod` base] ++ l, acarreoMult (x * n + ac) base)
-    where (l,ac) = multiNumFrac xs n base
--}
 multiNumEnt::[Int] -> Int -> Int -> Int -> [Int]
 multiNumEnt [] n base ac = [ac]
 multiNumEnt (x:xs) n base ac = 
     [(x * n + ac) `mod` base] ++ (multiNumEnt xs n base c)
     where c = acarreoMult (x * n + ac) base
 
-{-
-multiNum::[Int] -> [Int] -> Int -> Int -> ([Int],[Int])
-multiNum x y n base = 
-    (a,b)
-    where {
-      (b,z) = multiNumFrac y n base ;
-      a = multiNumEnt x n base z
-    }
--}
 multi::[Int] -> [Int] -> Int -> Int -> [Int]
 multi x [] base c = []
 multi x (y:ys) base c =
@@ -168,3 +142,14 @@ multRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) =
       (x,y) = splitAt ((length y1) + (length y2)) z ;
       z = multi ((reverse x1) ++ y1) ((reverse x2) ++ y2) base1 0
     }
+
+divSimple::[Int] -> Int -> Int -> Int -> ([Int],Int)
+divSimple [] n base r = ([],r)
+divSimple (x:xs) n base r =
+    (q,b)
+    where {
+      q = [(r*base + x) `div` n] ++ a ;
+      rem = (r*base + x) `mod` n ;
+      (a,b) = (divSimple xs n base rem)
+    }
+
