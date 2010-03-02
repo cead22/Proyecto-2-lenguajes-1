@@ -19,8 +19,8 @@ showRA::RealArbitrario -> String
 showRA (NoNeg x y base) = show ((fromIntegral (parteEntera x base 0) :: Double) + (parteFraccionaria y base 1))
 showRA (Neg x y base) = show (negate ((fromIntegral (parteEntera x base 0) :: Double) + (parteFraccionaria y base 1)))
 
-acarreo::Int -> Int -> Int
-acarreo s base 
+acarreoSum::Int -> Int -> Int
+acarreoSum s base 
     | s >= base = 1
     | otherwise = 0
 
@@ -30,17 +30,30 @@ adicionEnt [] (x:xs) base ac = [x + ac] ++ xs
 adicionEnt (x:xs) [] base ac = [x + ac] ++ xs
 adicionEnt (x:xs) (y:ys) base ac = 
     [(x + y + ac) `mod` base] ++ (adicionEnt xs ys base c)
-	where c = acarreo (x + ac + y) base
+	where c = acarreoSum (x + ac + y) base
 
 adicionFrac::[Int] -> [Int] -> Int -> ([Int],Int)
 adicionFrac [] [] base = ([],0)
 adicionFrac [] x base = (x,0)
 adicionFrac x [] base = (x,0)
 adicionFrac (x:xs) (y:ys) base = 
-    ([(x + y + ac) `mod` base] ++ l, acarreo (x + y + ac) base)
-	where (l,ac) = (adicionFrac xs ys base)
+    ([(x + y + ac) `mod` base] ++ l, acarreoSum (x + y + ac) base)
+	where (l,ac) = adicionFrac xs ys base
 			     	       
+adicion::[Int] -> [Int] -> [Int] -> [Int] -> Int -> ([Int],[Int])
+adicion x1 y1 x2 y2 base =
+    (x,y)
+    where {
+      (y,z) = adicionFrac y1 y2 base ;
+      x = adicionEnt x1 x2 base z
+    }
 
+sumaRA::RealArbitrario -> RealArbitrario -> RealArbitrario
+sumaRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) = 
+    (NoNeg x y base1)
+	where (x,y) = adicion x1 y1 x2 y2 base1
+
+{- viejo
 sumaRA::RealArbitrario -> RealArbitrario -> RealArbitrario
 sumaRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) = 
     (NoNeg x y base1)
@@ -48,6 +61,8 @@ sumaRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) =
 	  (y,z) = adicionFrac y1 y2 base1 ;
 	  x = adicionEnt x1 x2 base1 z
 	}
+-}
+
 sumaRA (Neg (x:xs) (y:ys) base1) (Neg (z:zs) (w:ws) base2) = 
     convertir (sumaRA (NoNeg (x:xs) (y:ys) base1) (NoNeg (z:zs) (w:ws) base2))
 
@@ -108,4 +123,48 @@ restaRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2)
     where {
       num1 = limpiar (NoNeg x1 y1 base1) ;
       num2 = limpiar (NoNeg x2 y2 base2)
+    }
+
+acarreoMult::Int -> Int -> Int
+acarreoMult s base
+    | s >= base = s `div` base
+    | otherwise = 0
+
+{-
+multiNumFrac::[Int] -> Int -> Int -> ([Int],Int)
+multiNumFrac [] n base = ([],0)
+multiNumFrac (x:xs) n base =
+    ([(x * n + ac) `mod` base] ++ l, acarreoMult (x * n + ac) base)
+    where (l,ac) = multiNumFrac xs n base
+-}
+multiNumEnt::[Int] -> Int -> Int -> Int -> [Int]
+multiNumEnt [] n base ac = [ac]
+multiNumEnt (x:xs) n base ac = 
+    [(x * n + ac) `mod` base] ++ (multiNumEnt xs n base c)
+    where c = acarreoMult (x * n + ac) base
+
+{-
+multiNum::[Int] -> [Int] -> Int -> Int -> ([Int],[Int])
+multiNum x y n base = 
+    (a,b)
+    where {
+      (b,z) = multiNumFrac y n base ;
+      a = multiNumEnt x n base z
+    }
+-}
+multi::[Int] -> [Int] -> Int -> Int -> [Int]
+multi x [] base c = []
+multi x (y:ys) base c =
+    adicionEnt ([ 0 | i <- [1..c]] ++ a) b base 0
+    where {
+      a = multiNumEnt (reverse x) (last (y:ys)) base 0 ;
+      b = multi x (init (y:ys)) base (c + 1)
+    }
+
+multRA::RealArbitrario -> RealArbitrario -> RealArbitrario
+multRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) =
+    NoNeg y (reverse x) base1
+    where {
+      (x,y) = splitAt ((length y1) + (length y2)) z ;
+      z = multi ((reverse x1) ++ y1) ((reverse x2) ++ y2) base1 0
     }
