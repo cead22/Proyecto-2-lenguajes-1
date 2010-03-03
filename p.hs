@@ -141,13 +141,13 @@ rellenar x t = x ++ [0 | z <- [1..t]]
 
 sustraccionRA::RealArbitrario -> RealArbitrario -> RealArbitrario
 sustraccionRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) = 
-    if mayorOIgual y1 y2 
+    if mayorEstricto (y1++[0|j<-[1..((length y2) - (length y1))]]) (y2++[0|j<-[1..((length y1) - (length y2))]]) 
     then
         let (y,_) = (sustraccionFrac (rellenar y1 ((length y2) - (length y1))) y2 base1)
         in NoNeg (sustraccionEnt x1 x2 base1 0) y base1
     else
-        let (y,_) = (sustraccionFrac (rellenar ([1]++y2) ((length y1) - (length y2))) y1 base1)
-        in NoNeg (sustraccionEnt x1 x2 base1 1) (tail (reverse y)) base1
+        let (y,_) = (sustraccionFrac (rellenar (y1) ((length y2) - (length y1))) y2 base1)
+        in NoNeg (sustraccionEnt x1 x2 base1 1) y base1
 
 
 restaRA::RealArbitrario -> RealArbitrario -> RealArbitrario
@@ -314,18 +314,16 @@ mostrarEnt (x:xs) base
     | (length (x:xs)) == 1 = x
     | otherwise =  (x + base * (mostrarEnt xs base))
 
-terminoPI::[Int] -> Int -> RealArbitrario
-terminoPI (n:ns) decimales =
-    if all (\x -> x == 0) (n:ns)
-    then NoNeg [3] ([1]++[ 3 | j <- [1..(decimales-1)] ]) 10
-    else termino_n
+terminoPI::Int -> Int -> RealArbitrario
+terminoPI n decimales =
+    termino_n
     where {
       termino_n = multRA primer_factor segundo_factor ;
       primer_factor = divRA (NoNeg [1] [] 10) dieciseis_i decimales ;
-      dieciseis_i = NoNeg (elevadoALa [16] [16] 10 (mostrarEnt (reverse (n:ns)) 10)) [] 10 ;
+      dieciseis_i = NoNeg [16^n] [] 10 ;
       segundo_factor = restaRA s1 (sumaRA s2 (sumaRA s3 s4)) ;
-      s1 = divRA (NoNeg [4] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (n:ns) [] 10)) (NoNeg [1] [] 10)) decimales ;
-      s2 = divRA (NoNeg [2] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (n:ns) [] 10)) (NoNeg [4] [] 10)) decimales ;
-      s3 = divRA (NoNeg [1] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (n:ns) [] 10)) (NoNeg [5] [] 10)) decimales ;
-      s4 = divRA (NoNeg [1] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (n:ns) [] 10)) (NoNeg [6] [] 10)) decimales
+      s1 = divRA (NoNeg [4] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg [n] [] 10)) (NoNeg [1] [] 10)) decimales ;
+      s2 = divRA (NoNeg [2] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg [n] [] 10)) (NoNeg [4] [] 10)) decimales ;
+      s3 = divRA (NoNeg [1] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg [n] [] 10)) (NoNeg [5] [] 10)) decimales ;
+      s4 = divRA (NoNeg [1] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg [n] [] 10)) (NoNeg [6] [] 10)) decimales
     }
