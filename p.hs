@@ -68,6 +68,8 @@ limpiar (NoNeg x y base) = NoNeg (reverse (limpia (reverse x))) (reverse (limpia
 -- recibe dos listas del mismo tamano, al derecho
 mayorEstrictoPorNumero::[Int] -> [Int] -> Bool
 mayorEstrictoPorNumero [] [] = False
+mayorEstrictoPorNumero (x:xs) [] = True
+mayorEstrictoPorNumero [] (y:ys) = False
 mayorEstrictoPorNumero (x:xs) (y:ys)
     | x > y = True
     | x < y = False
@@ -80,6 +82,19 @@ mayorEstricto x y
     | length x == length y = mayorEstrictoPorNumero x y
     | otherwise = False
 
+mayorOIgualPorNumero::[Int] -> [Int] -> Bool
+mayorOIgualPorNumero [] [] = True
+mayorOIgualPorNumero (x:xs) (y:ys)
+   | x > y = True
+   | x < y = False
+   | otherwise = mayorOIgualPorNumero xs ys
+
+mayorOIgual::[Int] -> [Int] -> Bool
+mayorOIgual x y
+   | length x > length y = True
+   | length x == length y = mayorOIgualPorNumero x y
+   | otherwise = False
+
 {-
 mayor::RealArbitrario -> RealArbitrario -> Bool
 mayor (NoNeg x1 y1 base1) (NoNeg x2 y2 base2)
@@ -91,7 +106,7 @@ mayor (NoNeg x1 y1 base1) (NoNeg x2 y2 base2)
 mayor::RealArbitrario -> RealArbitrario -> Bool
 mayor (NoNeg x1 y1 base1) (NoNeg x2 y2 base2)
     | mayorEstricto (reverse x1) (reverse x2) = True
-    | reverse x1 == reverse x2 && mayorOIgual y1 y2 = True
+    | reverse x1 == reverse x2 &&  y1 >= y2 = True
     | otherwise = False
 
 prestamo::Int -> Int
@@ -120,7 +135,7 @@ rellenar x t = x ++ [0 | z <- [1..t]]
 
 sustraccionRA::RealArbitrario -> RealArbitrario -> RealArbitrario
 sustraccionRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) = 
-    if y1 >= y2 
+    if mayorOIgual y1 y2 
     then
         let (y,_) = (sustraccionFrac (rellenar y1 ((length y2) - (length y1))) y2 base1)
         in NoNeg (sustraccionEnt x1 x2 base1 0) y base1
@@ -182,28 +197,57 @@ prestamoDiv x y
     | otherwise = 0
 
 -- recibe listas al reves
-divaux::[Int] -> [Int] -> Int -> Int -> Int -> ([Int],[Int])
-divaux [] (y:ys) base n d = ([],[])
-divaux (x:xs) (y:ys) base n d =
-    if (reverse prueba) > (reverse (x:xs))
-    then divaux (x:xs) (y:ys) base (n-1) d
-    else ([n], resta)
-        where {
-          resta = sustraccionEnt (x:xs) prueba base (prestamoDiv x (head prueba)) ;
-          prueba = multiNumEnt (y:ys) n base 0
-        }
-
--- recibe listas al derecho
-dividir::[Int] -> [Int] -> Int -> Int -> Int -> [Int]
-dividir [] (y:ys) base t d = []
-dividir (x:xs) (y:ys) base t d =
-    if x1 < (y:ys)
-    then dividir (x:xs) (y:ys) base (t+1) d
-    else 
-        if x2 == []
-        then resultado
-        else resultado ++ (dividir (modulo ++ x2) (y:ys) base (base-1) d)
+divaux::[Int] -> [Int] -> Int -> Int -> ([Int],[Int])
+divaux [] (y:ys) base n = ([],[])
+divaux (x:xs) (y:ys) base n =
+    if sum (x:xs) == 0
+    then ([0],[0])
+    else
+        if mayorEstricto (reverse prueba) (reverse (x:xs))
+        then divaux (x:xs) (y:ys) base (n-1)
+        else ([n], limpia(reverse resta))
             where {
-              (x1,x2) = splitAt t (x:xs) ;
-              (resultado,modulo) = divaux (reverse (x:xs)) (reverse (y:ys)) base (base-1) d
+              resta = sustraccionEnt (x:xs) prueba base 0 ;--(prestamoDiv x (head  (prueba))) ;
+              prueba = reverse(limpia(reverse(multiNumEnt (y:ys) n base 0)))
             }
+
+
+div1::[Int] -> [Int]-> Int -> Int -> [Int] -> [Int]
+div1 [] (y:ys) base i res = res
+div1 [0] (y:ys) base i res = res++[0]
+div1 (x:xs) (y:ys) base i res =
+   if mayorEstricto (limpia (y:ys)) (limpia x1) -- x1 < y:ys 
+   then if x2 == []
+        then res++resultado
+        else div1 (x:xs) (y:ys) base (i+1) res --2
+   else   
+       if x2 == [] 
+       then res++resultado
+       else (div2 (modulo ++ x2) (y:ys) base (length modulo) (res++resultado)) --2
+           where {
+             (x1,x2) = splitAt (i+1) (x:xs) ;
+             (resultado,modulo) = divaux (reverse (x1)) (reverse (y:ys)) base (base-1)
+           }
+
+div2::[Int] -> [Int]-> Int -> Int -> [Int] -> [Int]
+div2 [] (y:ys) base i res = res
+div2 [0] (y:ys) base i res = res++[0]
+div2 (x:xs) (y:ys) base i res =
+    if mayorEstricto (limpia (y:ys)) (limpia x1) -- x1 < y:ys 
+    then 
+        if x2 == []
+        then res++resultado
+        else div2 (x:xs) (y:ys) base (i+1) (res++[0])
+    else   
+        if x2 == [] 
+        then res++resultado
+        else div2 (modulo ++ x2) (y:ys) base (length modulo) (res++resultado)
+    where {
+      (x1,x2) = splitAt (i+1) (x:xs) ;
+      (resultado,modulo) = divaux (reverse (x1)) (reverse (y:ys)) base (base-1)
+    }
+       
+mostrar::[Int] -> Int -> Int
+mostrar (x:xs) base
+    | (length (x:xs)) == 1 = x
+    | otherwise =  (x + base * (mostrar xs base))
