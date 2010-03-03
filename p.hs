@@ -198,56 +198,105 @@ prestamoDiv x y
 
 -- recibe listas al reves
 divaux::[Int] -> [Int] -> Int -> Int -> ([Int],[Int])
-divaux [] (y:ys) base n = ([],[])
+divaux [] (y:ys) base n = ([],[0])
 divaux (x:xs) (y:ys) base n =
     if sum (x:xs) == 0
     then ([0],[0])
     else
         if mayorEstricto (reverse prueba) (reverse (x:xs))
         then divaux (x:xs) (y:ys) base (n-1)
-        else ([n], limpia(reverse resta))
+        else ([n], limpia (reverse resta))
             where {
               resta = sustraccionEnt (x:xs) prueba base 0 ;--(prestamoDiv x (head  (prueba))) ;
               prueba = reverse(limpia(reverse(multiNumEnt (y:ys) n base 0)))
             }
 
 
-div1::[Int] -> [Int]-> Int -> Int -> [Int] -> [Int]
-div1 [] (y:ys) base i res = res
-div1 [0] (y:ys) base i res = res++[0]
+div1::[Int] -> [Int] -> Int -> Int -> [Int] -> ([Int],[Int])
+div1 [] (y:ys) base i res = (res,[0])
+div1 [0] (y:ys) base i res = (res++[0],[0])
 div1 (x:xs) (y:ys) base i res =
    if mayorEstricto (limpia (y:ys)) (limpia x1) -- x1 < y:ys 
    then if x2 == []
-        then res++resultado
+        then (res++resultado,modulo)
         else div1 (x:xs) (y:ys) base (i+1) res --2
    else   
        if x2 == [] 
-       then res++resultado
+       then (res++resultado,modulo)
        else (div2 (modulo ++ x2) (y:ys) base (length modulo) (res++resultado)) --2
            where {
              (x1,x2) = splitAt (i+1) (x:xs) ;
              (resultado,modulo) = divaux (reverse (x1)) (reverse (y:ys)) base (base-1)
            }
 
-div2::[Int] -> [Int]-> Int -> Int -> [Int] -> [Int]
-div2 [] (y:ys) base i res = res
-div2 [0] (y:ys) base i res = res++[0]
+div2::[Int] -> [Int]-> Int -> Int -> [Int] -> ([Int],[Int])
+div2 [] (y:ys) base i res = (res,[0])
+div2 [0] (y:ys) base i res = (res++[0],[0])
 div2 (x:xs) (y:ys) base i res =
     if mayorEstricto (limpia (y:ys)) (limpia x1) -- x1 < y:ys 
     then 
         if x2 == []
-        then res++resultado
+        then (res++resultado,modulo)
         else div2 (x:xs) (y:ys) base (i+1) (res++[0])
     else   
         if x2 == [] 
-        then res++resultado
+        then (res++resultado,modulo)
         else div2 (modulo ++ x2) (y:ys) base (length modulo) (res++resultado)
     where {
       (x1,x2) = splitAt (i+1) (x:xs) ;
       (resultado,modulo) = divaux (reverse (x1)) (reverse (y:ys)) base (base-1)
     }
+
+divConDecimales::[Int] -> [Int] -> Int -> Int -> ([Int],[Int])
+divConDecimales (x:xs) (y:ys) base decimales =
+    (ent,frac)
+    where {
+      (ent,modent) = div1 (x:xs) (y:ys) base 0 [];
+      (frac,modfrac) = div1 (modent ++ [ 0 | j <- [1..decimales]]) (y:ys) base 0 []
+    }
+
+divRA::RealArbitrario -> RealArbitrario -> Int -> RealArbitrario
+divRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) decimales =
+    if (length y1 >= length y2)
+    then (NoNeg (reverse ent1) frac1 base1)
+    else (NoNeg (reverse ent2) frac2 base1)
+    where {
+      (ent1,frac1) = divConDecimales ((reverse x1) ++ y1) ((reverse x2) ++ y2 ++ ceros1) base1 decimales ;
+      ceros1 = [ 0 | j <- [1..((length y1) - (length y2))] ] ;
+
+      (ent2,frac2) = divConDecimales ((reverse x1) ++ y1 ++ ceros2) ((reverse x2) ++ y2) base1 decimales ;
+      ceros2 = [ 0 | j <- [1..((length y2) - (length y1))] ]
+    }
        
-mostrar::[Int] -> Int -> Int
-mostrar (x:xs) base
+elevadoALa::[Int] -> [Int] -> Int -> Int -> [Int]
+elevadoALa x y base 1 = y
+elevadoALa x y base n =
+    elevadoALa x (limpia (reverse (multi x y base 0))) base (n-1)
+
+
+entALista::Int -> [Int] -> [Int]
+entALista 0 y = y
+entALista x y = 
+    entALista (x `div` 10) y ++ [(x `mod` 10)]
+
+{-
+piAux::Int -> Int -> RealArbitrario
+piAux 0 decimales = NoNeg [] [] 10
+piAux n decimales =
+    sumaRA termino_n (piRA (n-1) decimales)
+    where {
+      termino_n =  multRA primer_factor segundo_factor
+      primer_factor = divRA (NoNeg [1] [] 10) dieciseis_i decimales ;
+      dieciseis_i = elevadoALa [16] [16] 10 n ;
+      segundo_factor = restaRA s1 (restaRA s2 (restaRA s3 s4)) ;
+      s1 = divRA (NoNeg [4] [] 10) (multRA
+      s2 = 
+      s3 = 
+      s4 = 
+-}
+
+
+mostrarEnt::[Int] -> Int -> Int
+mostrarEnt (x:xs) base
     | (length (x:xs)) == 1 = x
-    | otherwise =  (x + base * (mostrar xs base))
+    | otherwise =  (x + base * (mostrarEnt xs base))
