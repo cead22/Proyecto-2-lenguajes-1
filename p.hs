@@ -306,7 +306,7 @@ terminoPI n decimales =
     where {
       termino_n = multRA primer_factor segundo_factor ;
       primer_factor = divRA (NoNeg [1] [] 10) dieciseis_i decimales ;
-      dieciseis_i = NoNeg (entALista (16^n) []) [] 10 ;
+      dieciseis_i = NoNeg (reverse (elevadoALa [1,6] [1,6] 10 n)) [] 10 ;
       segundo_factor = restaRA s1 (sumaRA s2 (sumaRA s3 s4)) ;
       s1 = divRA real_cuatro (sumaRA (multRA real_ocho (NoNeg ent_l [] 10)) real_uno) decimales ;
       s2 = divRA real_dos (sumaRA (multRA real_ocho (NoNeg ent_l [] 10)) real_cuatro) decimales ;
