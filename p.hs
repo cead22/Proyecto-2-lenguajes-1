@@ -26,8 +26,10 @@ acarreoSum s base
 
 adicionEnt::[Int] -> [Int] -> Int -> Int -> [Int]
 adicionEnt [] [] base ac = [ac]
-adicionEnt [] (x:xs) base ac = [x + ac] ++ xs
-adicionEnt (x:xs) [] base ac = [x + ac] ++ xs
+--adicionEnt [] (x:xs) base ac = [x + ac] ++ xs
+adicionEnt [] (x:xs) base ac = adicionEnt (x:xs) [ac] base 0
+--adicionEnt (x:xs) [] base ac = [x + ac] ++ xs
+adicionEnt (x:xs) [] base ac = adicionEnt (x:xs) [ac] base 0
 adicionEnt (x:xs) (y:ys) base ac = 
     [(x + y + ac) `mod` base] ++ (adicionEnt xs ys base c)
 	where c = acarreoSum (x + ac + y) base
@@ -162,6 +164,19 @@ restaRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2)
 restaRA (NoNeg x1 y1 base1) (Neg x2 y2 base2) = sumaRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2)
 restaRA (Neg x1 y1 base1) (NoNeg x2 y2 base2) = convertir (sumaRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2))
 
+restaRA2::RealArbitrario -> RealArbitrario -> RealArbitrario
+restaRA2 (NoNeg x1 y1 base1) (NoNeg x2 y2 base2)
+    | (mayorEstricto num_1 num_2) = NoNeg e1 f1 base1 
+    | otherwise = convertir (NoNeg e2 f2 base1)
+    where {
+      (e1,f1) = splitAt (length (max sin_decimal_1 sin_decimal_2)) (sustraccionEnt num_1 num_2 10 0) ;
+      (e2,f2) = splitAt (length (max sin_decimal_1 sin_decimal_2)) (sustraccionEnt num_2 num_1 10 0) ;
+      num_1 = sin_decimal_1 ++ [ 0 | j <- [1..((length sin_decimal_2) - (length sin_decimal_1))] ] ;
+      num_2 = sin_decimal_2 ++ [ 0 | j <- [1..((length sin_decimal_1) - (length sin_decimal_2))] ];
+      sin_decimal_1 = (reverse x1) ++ y1 ;
+      sin_decimal_2 = (reverse x2) ++ y2
+    }
+
 acarreoMult::Int -> Int -> Int
 acarreoMult s base
     | s >= base = s `div` base
@@ -228,6 +243,7 @@ divaux (x:xs) (y:ys) base n =
 div1::[Int] -> [Int] -> Int -> Int -> [Int] -> ([Int],[Int])
 div1 [] (y:ys) base i res = (res,[0])
 div1 [0] (y:ys) base i res = (res++[0],[0])
+div1 (x:xs) [] base i res = (res,[0]) --flecha
 div1 (x:xs) (y:ys) base i res =
    if mayorEstricto (limpia (y:ys)) (limpia x1) -- x1 < y:ys 
    then if x2 == []
@@ -245,6 +261,7 @@ div1 (x:xs) (y:ys) base i res =
 div2::[Int] -> [Int]-> Int -> Int -> [Int] -> ([Int],[Int])
 div2 [] (y:ys) base i res = (res,[0])
 div2 [0] (y:ys) base i res = (res++[0],[0])
+div2 (x:xs) [] base i res = (res,[0]) --flecha
 div2 (x:xs) (y:ys) base i res =
     if mayorEstricto (limpia (y:ys)) (limpia x1) -- x1 < y:ys 
     then 
@@ -261,11 +278,11 @@ div2 (x:xs) (y:ys) base i res =
     }
 
 divConDecimales::[Int] -> [Int] -> Int -> Int -> ([Int],[Int])
-divConDecimales (x:xs) (y:ys) base decimales =
+divConDecimales x y base decimales =
     (ent,frac)
     where {
-      (ent,modent) = div1 (x:xs) (y:ys) base 0 [];
-      (frac,modfrac) = div1 (modent ++ [ 0 | j <- [1..decimales]]) (y:ys) base 0 []
+      (ent,modent) = div1 x y base 0 [];
+      (frac,modfrac) = div2 (modent ++ [ 0 | j <- [1..decimales]]) y base ((length modent))  []
     }
 
 divRA::RealArbitrario -> RealArbitrario -> Int -> RealArbitrario
@@ -281,26 +298,32 @@ divRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) decimales =
       ceros2 = [ 0 | j <- [1..((length y2) - (length y1))] ]
     }
        
+enDigitos::[Int] -> [Int]
+enDigitos [] = []
+enDigitos (x:xs)
+    | x > 9 = [x `div` 10] ++ [x `mod` 10] ++ xs
+    | otherwise = x:xs
+
 elevadoALa::[Int] -> [Int] -> Int -> Int -> [Int]
-elevadoALa x y base 1 = y
+elevadoALa x y base 1 = enDigitos y
 elevadoALa x y base n =
     elevadoALa x (limpia (reverse (multi x y base 0))) base (n-1)
 
 
 entALista::Int -> [Int] -> [Int]
 entALista 0 y = y
-entALista x y = entALista (x `div` 10) y ++ [(x `mod` 10)]
+entALista x y = [(x `mod` 10)] ++ entALista (x `div` 10) y
 
 piAux::[Int] -> Int -> RealArbitrario
 --piAux [] decimales = NoNeg [3] ([1]++[ 3 | j <- [1..decimales] ]) 10
 piAux (n:ns) decimales =
     if all (\x -> x == 0) (n:ns)
     then NoNeg [3] ([1]++[ 3 | j <- [1..(decimales-1)] ]) 10
-    else sumaRA termino_n (piAux (sustraccionEnt (n:ns) [1] 10 0) decimales)
+    else sumaRA termino_n (piAux (sustraccionEnt (reverse (n:ns)) [1] 10 0) decimales)
     where {
       termino_n =  multRA primer_factor segundo_factor ;
       primer_factor = divRA (NoNeg [1] [] 10) dieciseis_i decimales ;
-      dieciseis_i = NoNeg (elevadoALa [16] [16] 10 (mostrarEnt (reverse (n:ns)) 10)) [] 10 ;
+      dieciseis_i = NoNeg (reverse (elevadoALa [16] [16] 10 (mostrarEnt (reverse (n:ns)) 10))) [] 10 ;
       segundo_factor = restaRA s1 (sumaRA s2 (sumaRA s3 s4)) ;
       s1 = divRA (NoNeg [4] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (n:ns) [] 10)) (NoNeg [1] [] 10)) decimales ;
       s2 = divRA (NoNeg [2] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (n:ns) [] 10)) (NoNeg [4] [] 10)) decimales ;
@@ -308,6 +331,12 @@ piAux (n:ns) decimales =
       s4 = divRA (NoNeg [1] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (n:ns) [] 10)) (NoNeg [6] [] 10)) decimales
     }
 
+piAux2::Int -> Int -> RealArbitrario
+piAux2 n decimales =
+    if n == 0
+    then terminoPI 0 decimales
+    else 
+        sumaRA (terminoPI n decimales) (piAux2 (n-1) decimales)
 
 mostrarEnt::[Int] -> Int -> Int
 mostrarEnt (x:xs) base
@@ -315,15 +344,19 @@ mostrarEnt (x:xs) base
     | otherwise =  (x + base * (mostrarEnt xs base))
 
 terminoPI::Int -> Int -> RealArbitrario
+terminoPI 0 decimales = NoNeg [3] ([1]++[ 3 | j <- [1..(decimales-1)] ]) 10
 terminoPI n decimales =
     termino_n
     where {
       termino_n = multRA primer_factor segundo_factor ;
       primer_factor = divRA (NoNeg [1] [] 10) dieciseis_i decimales ;
-      dieciseis_i = NoNeg [16^n] [] 10 ;
+      dieciseis_i = NoNeg (entALista (16^n) []) [] 10 ;
       segundo_factor = restaRA s1 (sumaRA s2 (sumaRA s3 s4)) ;
-      s1 = divRA (NoNeg [4] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg [n] [] 10)) (NoNeg [1] [] 10)) decimales ;
-      s2 = divRA (NoNeg [2] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg [n] [] 10)) (NoNeg [4] [] 10)) decimales ;
-      s3 = divRA (NoNeg [1] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg [n] [] 10)) (NoNeg [5] [] 10)) decimales ;
-      s4 = divRA (NoNeg [1] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg [n] [] 10)) (NoNeg [6] [] 10)) decimales
+      s1 = divRA (NoNeg [4] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (entALista n []) [] 10)) (NoNeg [1] [] 10)) decimales ;
+      s2 = divRA (NoNeg [2] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (entALista n []) [] 10)) (NoNeg [4] [] 10)) decimales ;
+      s3 = divRA (NoNeg [1] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (entALista n []) [] 10)) (NoNeg [5] [] 10)) decimales ;
+      s4 = divRA (NoNeg [1] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (entALista n []) [] 10)) (NoNeg [6] [] 10)) decimales
     }
+
+ge (NoNeg x y base) = x
+gf (NoNeg x y base) = y
