@@ -39,9 +39,13 @@ adicionEnt (x:xs) (y:ys) base ac =
 sumaRA::RealArbitrario -> RealArbitrario -> RealArbitrario
 
 sumaRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) = 
+<<<<<<< HEAD:p.hs
     if compararBase base1 base2
     	then  NoNeg y (reverse x) base1
     	else  error "Error en las bases"    
+=======
+    NoNeg y (reverse x) base1
+>>>>>>> f0d8fd07e0ed1e6b0386f2f3dc1d0428270ebf84:p.hs
     where {
       (x,y) = splitAt (max (length y1) (length y2)) (adicionEnt ((reverse frac_1) ++ x1) ((reverse frac_2) ++ x2) base1 0);
       frac_1 = y1 ++ [ 0 | j <- [1..(tam_2 - tam_1)] ] ;
@@ -275,8 +279,13 @@ entALista::Int -> [Int] -> [Int]
 entALista 0 y = y
 entALista x y = [(x `mod` 10)] ++ entALista (x `div` 10) y
 
+<<<<<<< HEAD:p.hs
+piAux2::Int -> Int -> RealArbitrario
+piAux2 n decimales =
+=======
 piRA::Int -> Int -> RealArbitrario
 piRA n decimales =
+>>>>>>> f0d8fd07e0ed1e6b0386f2f3dc1d0428270ebf84:p.hs
     if n == 0
     then terminoPI 0 decimales
     else 
@@ -299,7 +308,7 @@ terminoPI n decimales =
     where {
       termino_n = multRA primer_factor segundo_factor ;
       primer_factor = divRA (NoNeg [1] [] 10) dieciseis_i decimales ;
-      dieciseis_i = NoNeg (reverse (elevadoALa [1,6] [1,6] 10 n)) [] 10 ;
+      dieciseis_i = NoNeg (entALista (16^n) []) [] 10 ;
       segundo_factor = restaRA s1 (sumaRA s2 (sumaRA s3 s4)) ;
       s1 = divRA real_cuatro (sumaRA (multRA real_ocho (NoNeg ent_l [] 10)) real_uno) decimales ;
       s2 = divRA real_dos (sumaRA (multRA real_ocho (NoNeg ent_l [] 10)) real_cuatro) decimales ;
@@ -314,7 +323,9 @@ terminoPI n decimales =
       real_uno    = (NoNeg [1] [] 10)
     }
 
-
+<<<<<<< HEAD:p.hs
 ge (NoNeg x y base) = x
 gf (NoNeg x y base) = y
-
+=======
+gf (NoNeg x y b) = y
+>>>>>>> f0d8fd07e0ed1e6b0386f2f3dc1d0428270ebf84:p.hs

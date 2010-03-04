@@ -15,10 +15,6 @@ convertir::RealArbitrario -> RealArbitrario
 convertir (NoNeg x y base) = Neg x y base
 convertir (Neg x y base) = NoNeg x y base
 
-compararBase::Int -> Int -> Bool
-compararBase base1 base2 = 
-	if base1 == base2 then True else False
-
 showRA::RealArbitrario -> String
 showRA (NoNeg x y base) = show ((fromIntegral (parteEntera x base 0) :: Double) + (parteFraccionaria y base 1))
 showRA (Neg x y base) = show (negate ((fromIntegral (parteEntera x base 0) :: Double) + (parteFraccionaria y base 1)))
@@ -30,25 +26,34 @@ acarreoSum s base
 
 adicionEnt::[Int] -> [Int] -> Int -> Int -> [Int]
 adicionEnt [] [] base ac = [ac]
+--adicionEnt [] (x:xs) base ac = [x + ac] ++ xs
 adicionEnt [] (x:xs) base ac = adicionEnt (x:xs) [ac] base 0
+--adicionEnt (x:xs) [] base ac = [x + ac] ++ xs
 adicionEnt (x:xs) [] base ac = adicionEnt (x:xs) [ac] base 0
 adicionEnt (x:xs) (y:ys) base ac = 
     [(x + y + ac) `mod` base] ++ (adicionEnt xs ys base c)
 	where c = acarreoSum (x + ac + y) base
 
-sumaRA::RealArbitrario -> RealArbitrario -> RealArbitrario
-
-sumaRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) = 
-    if compararBase base1 base2
-    	then  NoNeg y (reverse x) base1
-    	else  error "Error en las bases"    
+adicionFrac::[Int] -> [Int] -> Int -> ([Int],Int)
+adicionFrac [] [] base = ([],0)
+adicionFrac [] x base = (x,0)
+adicionFrac x [] base = (x,0)
+adicionFrac (x:xs) (y:ys) base = 
+    ([(x + y + ac) `mod` base] ++ l, acarreoSum (x + y + ac) base)
+	where (l,ac) = adicionFrac xs ys base
+			     	       
+adicion::[Int] -> [Int] -> [Int] -> [Int] -> Int -> ([Int],[Int])
+adicion x1 y1 x2 y2 base =
+    (x,y)
     where {
-      (x,y) = splitAt (max (length y1) (length y2)) (adicionEnt ((reverse frac_1) ++ x1) ((reverse frac_2) ++ x2) base1 0);
-      frac_1 = y1 ++ [ 0 | j <- [1..(tam_2 - tam_1)] ] ;
-      frac_2 = y2 ++ [ 0 | j <- [1..(tam_1 - tam_2)] ] ;
-      tam_1 = length y1 ;
-      tam_2 = length y2
+      (y,z) = adicionFrac y1 y2 base ;
+      x = adicionEnt x1 x2 base z
     }
+
+sumaRA::RealArbitrario -> RealArbitrario -> RealArbitrario
+sumaRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) = 
+    (NoNeg x y base1)
+	where (x,y) = adicion x1 y1 x2 y2 base1
 
 sumaRA (Neg (x:xs) (y:ys) base1) (Neg (z:zs) (w:ws) base2) = 
     convertir (sumaRA (NoNeg (x:xs) (y:ys) base1) (NoNeg (z:zs) (w:ws) base2))
@@ -85,6 +90,27 @@ mayorEstricto x y
     | length x == length y = mayorEstrictoPorNumero x y
     | otherwise = False
 
+mayorOIgualPorNumero::[Int] -> [Int] -> Bool
+mayorOIgualPorNumero [] [] = True
+mayorOIgualPorNumero (x:xs) (y:ys)
+   | x > y = True
+   | x < y = False
+   | otherwise = mayorOIgualPorNumero xs ys
+
+mayorOIgual::[Int] -> [Int] -> Bool
+mayorOIgual x y
+   | length x > length y = True
+   | length x == length y = mayorOIgualPorNumero x y
+   | otherwise = False
+
+{-
+mayor::RealArbitrario -> RealArbitrario -> Bool
+mayor (NoNeg x1 y1 base1) (NoNeg x2 y2 base2)
+    | reverse x1 > reverse x2 = True
+    | reverse x1 == reverse x2 && y1 >= y2 = True
+    | otherwise = False
+-}
+
 mayor::RealArbitrario -> RealArbitrario -> Bool
 mayor (NoNeg x1 y1 base1) (NoNeg x2 y2 base2)
     | mayorEstricto (reverse x1) (reverse x2) = True
@@ -104,23 +130,32 @@ sustraccionEnt (x:xs) (y:ys) base pr =
     [(x - y - pr) `mod` base] ++ (sustraccionEnt xs ys base c)
 	where c = prestamo (x - y - pr)
 
-restaR::RealArbitrario -> RealArbitrario -> RealArbitrario
-restaR (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) = 
-    if compararBase base1 base2
-    then  NoNeg y (reverse x) base1
-    else  error "Error en las bases"    
-    where {
-      (x,y) = splitAt (max (length y1) (length y2)) (sustraccionEnt ((reverse frac_1) ++ x1) ((reverse frac_2) ++ x2) base1 0);
-      frac_1 = y1 ++ [ 0 | j <- [1..(tam_2 - tam_1)] ] ;
-      frac_2 = y2 ++ [ 0 | j <- [1..(tam_1 - tam_2)] ] ;
-      tam_1 = length y1 ;
-      tam_2 = length y2
-    }
+sustraccionFrac::[Int] -> [Int] -> Int -> ([Int],Int)
+sustraccionFrac [] [] base = ([],0)
+sustraccionFrac [] x base = (x,1)
+sustraccionFrac x [] base = (x,0)
+sustraccionFrac (x:xs) (y:ys) base = 
+    ([(x - y - pr) `mod` base] ++ l, prestamo (x - y - pr))
+	where (l,pr) = (sustraccionFrac xs ys base)
+
+rellenar::[Int] -> Int -> [Int]
+rellenar x t = x ++ [0 | z <- [1..t]]
+
+sustraccionRA::RealArbitrario -> RealArbitrario -> RealArbitrario
+sustraccionRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) = 
+    if mayorEstricto (y1++[0|j<-[1..((length y2) - (length y1))]]) (y2++[0|j<-[1..((length y1) - (length y2))]]) 
+    then
+        let (y,_) = (sustraccionFrac (rellenar y1 ((length y2) - (length y1))) y2 base1)
+        in NoNeg (sustraccionEnt x1 x2 base1 0) y base1
+    else
+        let (y,_) = (sustraccionFrac (rellenar (y1) ((length y2) - (length y1))) y2 base1)
+        in NoNeg (sustraccionEnt x1 x2 base1 1) y base1
+
 
 restaRA::RealArbitrario -> RealArbitrario -> RealArbitrario
 restaRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2)
-    | (mayor num1 num2) = restaR num1 num2
-    | otherwise = convertir (restaR num2 num1)
+    | (mayor num1 num2) = sustraccionRA num1 num2
+    | otherwise = convertir (sustraccionRA num2 num1)
     where {
       num1 = limpiar (NoNeg x1 y1 base1) ;
       num2 = limpiar (NoNeg x2 y2 base2)
@@ -129,7 +164,18 @@ restaRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2)
 restaRA (NoNeg x1 y1 base1) (Neg x2 y2 base2) = sumaRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2)
 restaRA (Neg x1 y1 base1) (NoNeg x2 y2 base2) = convertir (sumaRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2))
 
-
+restaRA2::RealArbitrario -> RealArbitrario -> RealArbitrario
+restaRA2 (NoNeg x1 y1 base1) (NoNeg x2 y2 base2)
+    | (mayorEstricto num_1 num_2) = NoNeg e1 f1 base1 
+    | otherwise = convertir (NoNeg e2 f2 base1)
+    where {
+      (e1,f1) = splitAt (length (max sin_decimal_1 sin_decimal_2)) (sustraccionEnt num_1 num_2 10 0) ;
+      (e2,f2) = splitAt (length (max sin_decimal_1 sin_decimal_2)) (sustraccionEnt num_2 num_1 10 0) ;
+      num_1 = sin_decimal_1 ++ [ 0 | j <- [1..((length sin_decimal_2) - (length sin_decimal_1))] ] ;
+      num_2 = sin_decimal_2 ++ [ 0 | j <- [1..((length sin_decimal_1) - (length sin_decimal_2))] ];
+      sin_decimal_1 = (reverse x1) ++ y1 ;
+      sin_decimal_2 = (reverse x2) ++ y2
+    }
 
 acarreoMult::Int -> Int -> Int
 acarreoMult s base
@@ -142,7 +188,6 @@ multiNumEnt (x:xs) n base ac =
     [(x * n + ac) `mod` base] ++ (multiNumEnt xs n base c)
     where c = acarreoMult (x * n + ac) base
 
--- recibe listas al derecho
 multi::[Int] -> [Int] -> Int -> Int -> [Int]
 multi x [] base c = []
 multi x (y:ys) base c =
@@ -154,9 +199,7 @@ multi x (y:ys) base c =
 
 multRA::RealArbitrario -> RealArbitrario -> RealArbitrario
 multRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) =
-    if compararBase base1 base2
-    	then  NoNeg y (reverse x) base1
-    	else  error "Error en las bases" 
+    NoNeg y (reverse x) base1
     where {
       (x,y) = splitAt ((length y1) + (length y2)) z ;
       z = multi ((reverse x1) ++ y1) ((reverse x2) ++ y2) base1 0
@@ -244,14 +287,9 @@ divConDecimales x y base decimales =
 
 divRA::RealArbitrario -> RealArbitrario -> Int -> RealArbitrario
 divRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) decimales =
-    if compararBase base1 base2
-    then if (sum x2) + (sum y2) == 0
-	 then error "Division por Cero"
-	 else if (length y1 >= length y2)
-	     then (NoNeg (reverse ent1) frac1 base1)
-	     else (NoNeg (reverse ent2) frac2 base1)
-    	else  error "Error en las bases" 
-    
+    if (length y1 >= length y2)
+    then (NoNeg (reverse ent1) frac1 base1)
+    else (NoNeg (reverse ent2) frac2 base1)
     where {
       (ent1,frac1) = divConDecimales ((reverse x1) ++ y1) ((reverse x2) ++ y2 ++ ceros1) base1 decimales ;
       ceros1 = [ 0 | j <- [1..((length y1) - (length y2))] ] ;
@@ -271,26 +309,39 @@ elevadoALa x y base 1 = enDigitos y
 elevadoALa x y base n =
     elevadoALa x (limpia (reverse (multi x y base 0))) base (n-1)
 
+
 entALista::Int -> [Int] -> [Int]
 entALista 0 y = y
 entALista x y = [(x `mod` 10)] ++ entALista (x `div` 10) y
 
-piRA::Int -> Int -> RealArbitrario
-piRA n decimales =
+piAux::[Int] -> Int -> RealArbitrario
+--piAux [] decimales = NoNeg [3] ([1]++[ 3 | j <- [1..decimales] ]) 10
+piAux (n:ns) decimales =
+    if all (\x -> x == 0) (n:ns)
+    then NoNeg [3] ([1]++[ 3 | j <- [1..(decimales-1)] ]) 10
+    else sumaRA termino_n (piAux (sustraccionEnt (reverse (n:ns)) [1] 10 0) decimales)
+    where {
+      termino_n =  multRA primer_factor segundo_factor ;
+      primer_factor = divRA (NoNeg [1] [] 10) dieciseis_i decimales ;
+      dieciseis_i = NoNeg (reverse (elevadoALa [16] [16] 10 (mostrarEnt (reverse (n:ns)) 10))) [] 10 ;
+      segundo_factor = restaRA s1 (sumaRA s2 (sumaRA s3 s4)) ;
+      s1 = divRA (NoNeg [4] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (n:ns) [] 10)) (NoNeg [1] [] 10)) decimales ;
+      s2 = divRA (NoNeg [2] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (n:ns) [] 10)) (NoNeg [4] [] 10)) decimales ;
+      s3 = divRA (NoNeg [1] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (n:ns) [] 10)) (NoNeg [5] [] 10)) decimales ;
+      s4 = divRA (NoNeg [1] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (n:ns) [] 10)) (NoNeg [6] [] 10)) decimales
+    }
+
+piAux2::Int -> Int -> RealArbitrario
+piAux2 n decimales =
     if n == 0
     then terminoPI 0 decimales
     else 
-        sumaRA (terminoPI n decimales) (piRA (n-1) decimales)
+        sumaRA (terminoPI n decimales) (piAux2 (n-1) decimales)
 
-mostrarEnt::[Int] -> Int
-mostrarEnt (x:xs) 
+mostrarEnt::[Int] -> Int -> Int
+mostrarEnt (x:xs) base
     | (length (x:xs)) == 1 = x
-    | otherwise =  x + 10 * (mostrarEnt xs)
-
-mostrarFrac::[Int] -> Double
-mostrarFrac (x:xs)
-    | (length (x:xs)) == 1 = fromIntegral x :: Double
-    | otherwise =  ((fromIntegral x :: Double) + (mostrarFrac xs)) / (fromIntegral 10 :: Double)
+    | otherwise =  (x + base * (mostrarEnt xs base))
 
 terminoPI::Int -> Int -> RealArbitrario
 terminoPI 0 decimales = NoNeg [3] ([1]++[ 3 | j <- [1..(decimales-1)] ]) 10
@@ -299,22 +350,13 @@ terminoPI n decimales =
     where {
       termino_n = multRA primer_factor segundo_factor ;
       primer_factor = divRA (NoNeg [1] [] 10) dieciseis_i decimales ;
-      dieciseis_i = NoNeg (reverse (elevadoALa [1,6] [1,6] 10 n)) [] 10 ;
+      dieciseis_i = NoNeg (entALista (16^n) []) [] 10 ;
       segundo_factor = restaRA s1 (sumaRA s2 (sumaRA s3 s4)) ;
-      s1 = divRA real_cuatro (sumaRA (multRA real_ocho (NoNeg ent_l [] 10)) real_uno) decimales ;
-      s2 = divRA real_dos (sumaRA (multRA real_ocho (NoNeg ent_l [] 10)) real_cuatro) decimales ;
-      s3 = divRA real_uno (sumaRA (multRA real_ocho (NoNeg ent_l [] 10)) real_cinco) decimales ;
-      s4 = divRA (NoNeg [1] [] 10) (sumaRA (multRA real_ocho (NoNeg (ent_l) [] 10)) real_seis) decimales ;
-      ent_l = (entALista n []) ;
-      real_ocho   = (NoNeg [8] [] 10) ;
-      real_cuatro = (NoNeg [4] [] 10) ;
-      real_cinco  = (NoNeg [5] [] 10) ;
-      real_seis   = (NoNeg [6] [] 10) ;
-      real_dos    = (NoNeg [2] [] 10) ;
-      real_uno    = (NoNeg [1] [] 10)
+      s1 = divRA (NoNeg [4] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (entALista n []) [] 10)) (NoNeg [1] [] 10)) decimales ;
+      s2 = divRA (NoNeg [2] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (entALista n []) [] 10)) (NoNeg [4] [] 10)) decimales ;
+      s3 = divRA (NoNeg [1] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (entALista n []) [] 10)) (NoNeg [5] [] 10)) decimales ;
+      s4 = divRA (NoNeg [1] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (entALista n []) [] 10)) (NoNeg [6] [] 10)) decimales
     }
-
 
 ge (NoNeg x y base) = x
 gf (NoNeg x y base) = y
-
