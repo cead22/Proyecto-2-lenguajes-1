@@ -26,34 +26,30 @@ acarreoSum s base
 
 adicionEnt::[Int] -> [Int] -> Int -> Int -> [Int]
 adicionEnt [] [] base ac = [ac]
---adicionEnt [] (x:xs) base ac = [x + ac] ++ xs
 adicionEnt [] (x:xs) base ac = adicionEnt (x:xs) [ac] base 0
---adicionEnt (x:xs) [] base ac = [x + ac] ++ xs
 adicionEnt (x:xs) [] base ac = adicionEnt (x:xs) [ac] base 0
 adicionEnt (x:xs) (y:ys) base ac = 
     [(x + y + ac) `mod` base] ++ (adicionEnt xs ys base c)
 	where c = acarreoSum (x + ac + y) base
 
-adicionFrac::[Int] -> [Int] -> Int -> ([Int],Int)
-adicionFrac [] [] base = ([],0)
-adicionFrac [] x base = (x,0)
-adicionFrac x [] base = (x,0)
-adicionFrac (x:xs) (y:ys) base = 
-    ([(x + y + ac) `mod` base] ++ l, acarreoSum (x + y + ac) base)
-	where (l,ac) = adicionFrac xs ys base
-			     	       
-adicion::[Int] -> [Int] -> [Int] -> [Int] -> Int -> ([Int],[Int])
-adicion x1 y1 x2 y2 base =
-    (x,y)
-    where {
-      (y,z) = adicionFrac y1 y2 base ;
-      x = adicionEnt x1 x2 base z
-    }
-
 sumaRA::RealArbitrario -> RealArbitrario -> RealArbitrario
+
+sumaRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) = 
+    NoNeg y (reverse x) base1
+    where {
+      (x,y) = splitAt (max (length y1) (length y2)) (adicionEnt ((reverse frac_1) ++ x1) ((reverse frac_2) ++ x2) base1 0);
+      frac_1 = y1 ++ [ 0 | j <- [1..(tam_2 - tam_1)] ] ;
+      frac_2 = y2 ++ [ 0 | j <- [1..(tam_1 - tam_2)] ] ;
+      tam_1 = length y1 ;
+      tam_2 = length y2
+    }
+{-
+
 sumaRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) = 
     (NoNeg x y base1)
 	where (x,y) = adicion x1 y1 x2 y2 base1
+
+-}
 
 sumaRA (Neg (x:xs) (y:ys) base1) (Neg (z:zs) (w:ws) base2) = 
     convertir (sumaRA (NoNeg (x:xs) (y:ys) base1) (NoNeg (z:zs) (w:ws) base2))
@@ -314,6 +310,8 @@ entALista::Int -> [Int] -> [Int]
 entALista 0 y = y
 entALista x y = [(x `mod` 10)] ++ entALista (x `div` 10) y
 
+{-
+
 piAux::[Int] -> Int -> RealArbitrario
 --piAux [] decimales = NoNeg [3] ([1]++[ 3 | j <- [1..decimales] ]) 10
 piAux (n:ns) decimales =
@@ -330,6 +328,8 @@ piAux (n:ns) decimales =
       s3 = divRA (NoNeg [1] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (n:ns) [] 10)) (NoNeg [5] [] 10)) decimales ;
       s4 = divRA (NoNeg [1] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (n:ns) [] 10)) (NoNeg [6] [] 10)) decimales
     }
+
+-}
 
 piAux2::Int -> Int -> RealArbitrario
 piAux2 n decimales =
