@@ -272,7 +272,7 @@ elevadoALa x y base n =
 
 
 entALista::Int -> [Int] -> [Int]
-entALista 0 y = y
+--entALista 0 y = y
 entALista x y = [(x `mod` 10)] ++ entALista (x `div` 10) y
 
 piAux2::Int -> Int -> RealArbitrario
