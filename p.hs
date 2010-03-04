@@ -43,13 +43,6 @@ sumaRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) =
       tam_1 = length y1 ;
       tam_2 = length y2
     }
-{-
-
-sumaRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) = 
-    (NoNeg x y base1)
-	where (x,y) = adicion x1 y1 x2 y2 base1
-
--}
 
 sumaRA (Neg (x:xs) (y:ys) base1) (Neg (z:zs) (w:ws) base2) = 
     convertir (sumaRA (NoNeg (x:xs) (y:ys) base1) (NoNeg (z:zs) (w:ws) base2))
@@ -85,27 +78,6 @@ mayorEstricto x y
     | length x > length y = True
     | length x == length y = mayorEstrictoPorNumero x y
     | otherwise = False
-
-mayorOIgualPorNumero::[Int] -> [Int] -> Bool
-mayorOIgualPorNumero [] [] = True
-mayorOIgualPorNumero (x:xs) (y:ys)
-   | x > y = True
-   | x < y = False
-   | otherwise = mayorOIgualPorNumero xs ys
-
-mayorOIgual::[Int] -> [Int] -> Bool
-mayorOIgual x y
-   | length x > length y = True
-   | length x == length y = mayorOIgualPorNumero x y
-   | otherwise = False
-
-{-
-mayor::RealArbitrario -> RealArbitrario -> Bool
-mayor (NoNeg x1 y1 base1) (NoNeg x2 y2 base2)
-    | reverse x1 > reverse x2 = True
-    | reverse x1 == reverse x2 && y1 >= y2 = True
-    | otherwise = False
--}
 
 mayor::RealArbitrario -> RealArbitrario -> Bool
 mayor (NoNeg x1 y1 base1) (NoNeg x2 y2 base2)
