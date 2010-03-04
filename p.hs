@@ -9,7 +9,7 @@ data RealArbitrario = NoNeg [Int] [Int] Int
 -- @param RealArbitrario : RealArbitrario al cual se
 -- le desea cambiar el signo.
 --
--- Retorna: RealArbitrario con signo opuesto
+-- @return: RealArbitrario con signo opuesto.
 ----------------------------------------------------------------
 convertir::RealArbitrario -> RealArbitrario
 convertir (NoNeg x y base) = Neg x y base
@@ -21,32 +21,21 @@ convertir (Neg x y base) = NoNeg x y base
 -- @param Int: base1
 -- @param Int base 2
 --
---Retorna : True si las bases son iguales False en caso contario.
+-- @return : True si las bases son iguales False en caso contario.
 -----------------------------------------------------------------
 compararBase::Int -> Int -> Bool
 compararBase base1 base2 = 
 	if base1 == base2 then True else False
 
--------------------- showRA --------------------------
--- Retorna un string que muestra un RealArbitrario en base 10.
---
--- @param RealArbitrario : parametro a transformar
---
--- Retorna : String que representa el RealArbitrario.
-----------------------------------------------------------
-showRA::RealArbitrario -> String
-showRA (NoNeg x y base) = show ((fromIntegral (parteEntera x base 0) :: Double) + (parteFraccionaria y base 1))
-showRA (Neg x y base) = show (negate ((fromIntegral (parteEntera x base 0) :: Double) + (parteFraccionaria y base 1)))
-
--------------------- acarreoSum --------------------------
+-------------------- acarreoSum --------------------------------
 -- Determina si hay o no acarreo en la suma y retorna su valor.
 --
 -- @param Int : Numero que permite determina si hay que llevar
 -- acarreo o no.
 -- @param Int : Base en la que se encuentra el Int dado.
 --
--- Retorna : Acarreo resultante
------------------------------------------------------------
+-- @return : Acarreo resultante.
+----------------------------------------------------------------
 acarreoSum::Int -> Int -> Int
 acarreoSum s base 
     | s >= base = 1
@@ -60,7 +49,7 @@ acarreoSum s base
 -- @param Int : base de las listas.
 -- @param Int : acarreo que lleva la suma.
 --
--- Retorna: Lista con el resultado de la suma (en orden inverso)
+-- @return: Lista con el resultado de la suma (en orden inverso)
 -----------------------------------------------------------------
 adicionEnt::[Int] -> [Int] -> Int -> Int -> [Int]
 adicionEnt [] [] base ac = [ac]
@@ -76,7 +65,7 @@ adicionEnt (x:xs) (y:ys) base ac =
 -- @param RealArbitrario : primer parametro sumar
 -- @param RealArbitrario : segundo parametro a sumar
 --
--- Retorna: RealArbitrario resultante de la suma.
+-- @return: RealArbitrario resultante de la suma.
 -----------------------------------------------------------------
 sumaRA::RealArbitrario -> RealArbitrario -> RealArbitrario
 sumaRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) = 
@@ -107,7 +96,7 @@ sumaRA (Neg (x:xs) (y:ys) base1) (NoNeg (z:zs) (w:ws) base2) =
 --
 -- @param [Int] : Representacion del numero a tratar
 --
--- Retorna: Lista equivanlente a la pasada como parametro pero sin
+-- @return: Lista equivanlente a la pasada como parametro pero sin
 -- los ceros no significativos
 -----------------------------------------------------------------
 limpia::[Int] -> [Int]
@@ -121,7 +110,7 @@ limpia (x:xs) = if x == 0
 --
 -- @param RealArbitrario : Representacion del numero a tratar
 --
--- Retorna: Lista equivanlente a la pasada como parametro pero sin
+-- @return: Lista equivanlente a la pasada como parametro pero sin
 -- los ceros no significativos
 -----------------------------------------------------------------         
 limpiar::RealArbitrario -> RealArbitrario
@@ -137,7 +126,7 @@ limpiar (NoNeg x y base) =
 -- @param [Int] : Primera lista a comparar (en Orden)
 -- @param [Int] : Segunda lista a comparar (en Orden)
 --
--- Retorna: True si se cumple la condicion False en caso contrario
+-- @return: True si se cumple la condicion False en caso contrario
 -----------------------------------------------------------------
 mayorEstrictoPorNumero::[Int] -> [Int] -> Bool
 mayorEstrictoPorNumero [] [] = False
@@ -156,7 +145,7 @@ mayorEstrictoPorNumero (x:xs) (y:ys)
 -- @param [Int] : Primera lista a comparar (en Orden)
 -- @param [Int] : Segunda lista a comparar (en Orden)
 --
--- Retorna: True si se cumple la condicion False en caso contrario
+-- @return: True si se cumple la condicion False en caso contrario
 -----------------------------------------------------------------
 mayorEstricto::[Int] -> [Int] -> Bool
 mayorEstricto x y
@@ -171,7 +160,7 @@ mayorEstricto x y
 -- @param RealArbitrario : Primera parametro a comparar
 -- @param RealArbitrario : Segunda parametro lista a comparar
 --
--- Retorna: True si se cumple la condicion False en caso contrario
+-- @return: True si se cumple la condicion False en caso contrario
 -----------------------------------------------------------------
 mayor::RealArbitrario -> RealArbitrario -> Bool
 mayor (NoNeg x1 y1 base1) (NoNeg x2 y2 base2)
@@ -185,7 +174,7 @@ mayor (NoNeg x1 y1 base1) (NoNeg x2 y2 base2)
 -- @param Int : Numero que permite determina si hay que llevar
 -- acarreo o no.
 --
--- Retorna : Acarreo resultante
+-- @return : Acarreo resultante
 -----------------------------------------------------------
 prestamo::Int -> Int
 prestamo s
@@ -200,7 +189,7 @@ prestamo s
 -- @param Int : base de las listas.
 -- @param Int : acarreo que lleva la resta.
 --
--- Retorna: Lista con el resultado de la resta (en orden)
+-- @return: Lista con el resultado de la resta (en orden)
 -----------------------------------------------------------------
 sustraccionEnt::[Int] -> [Int] -> Int -> Int -> [Int]
 sustraccionEnt [] [] base pr = []
@@ -217,15 +206,14 @@ sustraccionEnt (x:xs) (y:ys) base pr =
 -- @param RealArbitrario : primer parametro restar
 -- @param RealArbitrario : segundo parametro a restar
 --
--- Retorna: RealArbitrario resultante de la resta
+-- @return: RealArbitrario resultante de la resta
 -----------------------------------------------------------------
 restaR::RealArbitrario -> RealArbitrario -> RealArbitrario
 restaR (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) = 
     if compararBase base1 base2
     then  NoNeg y (reverse x) base1
     else  error "Error en las bases"    
-<<<<<<< HEAD:p.hs
-     where {
+        where {
           (x,y) = splitAt t (sustraccionEnt ((reverse frac_1) ++ x1) ((reverse frac_2) ++ x2) base1 0);
           t = (max (length y1) (length y2)) ;
           frac_1 = y1 ++ [ 0 | j <- [1..(tam_2 - tam_1)] ] ;
@@ -241,7 +229,7 @@ restaR (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) =
 -- @param RealArbitrario : primer parametro restar
 -- @param RealArbitrario : segundo parametro a restar
 --
--- Retorna: RealArbitrario resultante de la resta
+-- @return: RealArbitrario resultante de la resta
 -----------------------------------------------------------------
 
 restaRA::RealArbitrario -> RealArbitrario -> RealArbitrario
@@ -267,7 +255,7 @@ restaRA (Neg x1 y1 base1) (NoNeg x2 y2 base2) =
 -- acarreo o no.
 -- @param Int : Base en la que se encuentra el Int dado.
 --
--- Retorna : Acarreo resultante
+-- @return : Acarreo resultante
 -----------------------------------------------------------
 acarreoMult::Int -> Int -> Int
 acarreoMult s base
@@ -283,7 +271,7 @@ acarreoMult s base
 -- @param Int : base de los numero.
 -- @param Int : acarreo que lleva la multiplicacion.
 --
--- Retorna: Lista con el resultado de la multiplicacion(en orden)
+-- @return: Lista con el resultado de la multiplicacion(en orden)
 -----------------------------------------------------------------
 multiNumEnt::[Int] -> Int -> Int -> Int -> [Int]
 multiNumEnt [] n base ac = [ac]
@@ -299,7 +287,7 @@ multiNumEnt (x:xs) n base ac =
 -- @param Int : base de los numero.
 -- @param Int : acarreo que lleva la multiplicacion.
 --
--- Retorna: Lista con el resultado de la multiplicacion(en orden inverso)
+-- @return: Lista con el resultado de la multiplicacion(en orden inverso)
 -----------------------------------------------------------------
 multi::[Int] -> [Int] -> Int -> Int -> [Int]
 multi x [] base c = []
@@ -316,7 +304,7 @@ multi x (y:ys) base c =
 -- @param RealArbitrario : primer parametro de la mutiplicacion
 -- @param RealArbitrario : segundo parametro de la multiplicacion
 --
--- Retorna: RealArbitrario resultante de la multiplicacion
+-- @return: RealArbitrario resultante de la multiplicacion
 -----------------------------------------------------------------
 multRA::RealArbitrario -> RealArbitrario -> RealArbitrario
 multRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) =
@@ -346,7 +334,7 @@ multRA (Neg x1 y1 base1) (NoNeg x2 y2 base2) =
 -- @param Int : base de los numero.
 -- @param Int : resto.
 --
--- Retorna: Lista con el resultado de la division(en orden)
+-- @return: Lista con el resultado de la division(en orden)
 -----------------------------------------------------------------
 divSimple::[Int] -> Int -> Int -> Int -> ([Int],Int)
 divSimple [] n base r = ([],r)
@@ -366,7 +354,7 @@ divSimple (x:xs) n base r =
 --prestamo
 -- @param Int : Base en la que se encuentra el Int dado.
 --
--- Retorna : prestamo resultante.
+-- @return : prestamo resultante.
 -----------------------------------------------------------
 prestamoDiv::Int -> Int -> Int
 prestamoDiv x y
@@ -381,7 +369,7 @@ prestamoDiv x y
 -- @param Int : base de los numero.
 -- @param Int : prestamo
 --
--- Retorna: Lista con el resultado de la division (en orden inverso)
+-- @return: Lista con el resultado de la division (en orden inverso)
 divaux::[Int] -> [Int] -> Int -> Int -> ([Int],[Int])
 divaux [] (y:ys) base n = ([],[0])
 divaux (x:xs) (y:ys) base n =
@@ -405,7 +393,7 @@ divaux (x:xs) (y:ys) base n =
 -- @param Int : prestamo
 -- @parame [Int] : resultado de la division
 --
--- Retorna: Lista con el resultado de la division (en orden) y una lista
+-- @return: Lista con el resultado de la division (en orden) y una lista
 -- con el modulo de la division. 
 div1::[Int] -> [Int] -> Int -> Int -> [Int] -> ([Int],[Int])
 div1 [] (y:ys) base i res = (res,[0])
@@ -435,7 +423,7 @@ div1 (x:xs) (y:ys) base i res =
 -- @param Int : prestamo
 -- @parame [Int] : resultado de la division
 --
--- Retorna: Lista con el resultado de la division (en orden) y una lista
+-- @return: Lista con el resultado de la division (en orden) y una lista
 -- con el modulo de la division. 
 div2::[Int] -> [Int]-> Int -> Int -> [Int] -> ([Int],[Int])
 div2 [] (y:ys) base i res = (res,[0])
@@ -467,10 +455,10 @@ divConDecimales x y base decimales =
 ----------------------- divRA ----------------------------------
 -- Calcula la division de dos reales arbitrarios.
 --
--- @param RealArbitrario : divisor
 -- @param RealArbitrario : dividendo
+-- @param RealArbitrario : divisor
 --
--- Retorna: RealArbitrario resultante de la division
+-- @return: RealArbitrario resultante de la division
 -----------------------------------------------------------------
 divRA::RealArbitrario -> RealArbitrario -> Int -> RealArbitrario
 divRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) decimales =
@@ -489,22 +477,48 @@ divRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) decimales =
       (ent2,frac2) = divConDecimales ((reverse x1) ++ y1 ++ ceros2) ((reverse x2) ++ y2) base1 decimales ;
       ceros2 = [ 0 | j <- [1..((length y2) - (length y1))] ]
     }
-       
-enDigitos::[Int] -> [Int]
-enDigitos [] = []
-enDigitos (x:xs)
-    | x > 9 = [x `div` 10] ++ [x `mod` 10] ++ xs
-    | otherwise = x:xs
 
+----------------------- elevadoALa-------------------------------
+-- Calcula la potencia de un numero expresado como una lista.
+--
+-- @param [Int] : lista que representa la base (base^potencia)
+-- @param [Int] : lista con resultado acumulado
+-- @param Int : base numerica (decimal, bin..)
+-- @param Int : potencia
+--
+-- @return: lista que representa la potencia deseada
+-----------------------------------------------------------------
 elevadoALa::[Int] -> [Int] -> Int -> Int -> [Int]
-elevadoALa x y base 1 = enDigitos y
+elevadoALa x y base 1 =  y
 elevadoALa x y base n =
     elevadoALa x (limpia (reverse (multi x y base 0))) base (n-1)
 
+----------------------- entALista -------------------------------
+-- Convierte un entero a una lista (de enteros, invertida) que lo
+-- representa 
+--
+-- @param Int : entero a representar como lista de enteros
+-- @param [Int] : lista con representacion acumulada
+--
+-- @return: representacion como lista del numero en cuestion
+-----------------------------------------------------------------
 entALista::Int -> [Int] -> [Int]
 entALista 0 y = y
 entALista x y = [(x `mod` 10)] ++ entALista (x `div` 10) y
 
+----------------------- piRA ------------------------------------
+-- Obtiene un valor de pi con la cantidad de decimales indicadas
+-- por el parametro d. Para cumplir con la especificacion del
+-- proyecto dada se retornan  d decimales, a pesar de que en este
+-- punto ya fueron calculados 2*d decimales (ver terminoPI)
+--
+-- @param Int : terminos de la sumatoria de la formula de
+-- Bailey-Borwein-Plouffe
+-- @param Int : cantidad de decimales de pi deseada
+--
+-- @return: representacion de pi como un RealArbitrario con d
+-- decimales 
+-----------------------------------------------------------------
 piRA::Int -> Int -> RealArbitrario
 piRA 0 d = NoNeg [] [] 10
 piRA t 0 = NoNeg [3] [] 10
@@ -516,12 +530,37 @@ piRA t d =
       resultado = piAux t d
     }
 
+----------------------- piAux -----------------------------------
+-- Suma los n terminos de la sumatoria de la formula de 
+-- Bailey-Borwein-Plouffe
+--
+-- @param Int : terminos de la sumatoria
+-- @param Int : cantidad de decimales deseada
+--
+-- @return: representacion de pi como un RealArbitrario con 2*d
+-- decimales (ver terminoPI)
+-----------------------------------------------------------------
 piAux::Int -> Int -> RealArbitrario
 piAux n decimales =
     if n == 0
     then terminoPI 0 decimales
     else sumaRA (terminoPI n decimales) (piAux (n-1) decimales)
 
+----------------------- terminoPI -------------------------------
+-- Calcula el n-esimo termino de pi segun la formula de 
+-- Bailey-Borwein-Plouffe
+--
+-- @param Int : termino a calcular
+-- @param Int : cantidad de decimales deseada
+--
+-- @return: representacion como RealArbitrario del n-esimo
+-- termino de pi segun la formula de Bailey-Borwein-Plouff
+-- 
+-- NOTA: ambos factores del termino son calculados con tantos 
+-- decimales como se indica en el parametro (decimales), por lo
+-- que al multiplicarlos se obtiene un RealArbitrario con el
+-- doble de decimales que los indicados.
+-----------------------------------------------------------------
 terminoPI::Int -> Int -> RealArbitrario
 terminoPI 0 decimales = NoNeg [3] ([1]++[ 3 | j <- [1..(decimales-1)] ]) 10
 terminoPI n decimales =
@@ -544,20 +583,60 @@ terminoPI n decimales =
       real_uno    = (NoNeg [1] [] 10)
     }
 
+----------------------- mostrarEnt ------------------------------
+-- Calcula el entero representado como una lista invertida de los
+-- digitos de un numero en una determinada base
+--
+-- @param [Int] : lista de digitos
+-- @param Int : base numerica
+--
+-- @return: entero en base 10 correspondiente a la lista y base
+-- suministradas.
+-----------------------------------------------------------------
 mostrarEnt::[Int] -> Int -> Int
 mostrarEnt [] base = 0
 mostrarEnt (x:xs) base
     | (length (x:xs)) == 1 = x
     | otherwise = x + base * (mostrarEnt xs base)
 
+----------------------- mostrarFrac -----------------------------
+-- Calcula el numero punto flotante representado como una lista
+-- invertida de los digitos de un numero en una determinada base
+--
+-- @param [Int] : lista de digitos
+-- @param Int : base numerica
+--
+-- @return: numero punto flotante en base 10 correspondiente a la
+-- lista y base suministradas.
+-----------------------------------------------------------------
 mostrarFrac::[Int] -> Int -> Double
 mostrarFrac [] base = 0
-mostrarFrac (x:xs) base = ((fromIntegral x :: Double) + (mostrarFrac xs base)) / (fromIntegral base :: Double)
+mostrarFrac (x:xs) base = 
+    ((fromIntegral x :: Double) + (mostrarFrac xs base)) / (fromIntegral base :: Double)
 
+
+----------------------- mostrarLista ----------------------------
+-- Obtiene la representacion como cadena de caracteres de un
+-- entero representado como una lista de sus digitos
+--
+-- @param [Int] : lista de digitos
+--
+-- @return: cadena de caracteres correspondiente al numero 
+-----------------------------------------------------------------
 mostrarLista:: [Int] -> String
 mostrarLista [] = ""
 mostrarLista (x:xs) = (show x) ++ (mostrarLista xs)
 
+----------------------- showAux ---------------------------------
+-- Obtiene la cadena de caracteres que representa a un numero
+-- representado como RealArbitrario, asociada a la notacion
+-- natural empleada para escribir numeros
+--
+-- @param RealArbitrario : numero del cual se quiere mostrar
+-- una representacion legible
+--
+-- @return: cadena de caracteres correspondiente al numero 
+-----------------------------------------------------------------
 showAux::RealArbitrario -> String
 showAux (NoNeg [] [] base) = "0"
 showAux (NoNeg [] (y:ys) base) = "0." ++ (mostrarLista (y:ys))
@@ -569,20 +648,64 @@ showAux (NoNeg (x:xs) (y:ys) base) =
       y_limpia = reverse (limpia (reverse (y:ys)))
     }
 
+----------------------- showDecimal -----------------------------
+-- Obtiene la cadena de caracteres que representa a un numero
+-- representado como RealArbitrario, asociada a la notacion
+-- natural empleada para escribir numeros, incluyendo el signo
+-- en caso de ser negativo
+--
+-- @param RealArbitrario : numero del cual se quiere mostrar
+-- una representacion legible
+--
+-- @return: cadena de caracteres correspondiente al numero 
+-----------------------------------------------------------------
 showDecimal::RealArbitrario -> String
 showDecimal (NoNeg x y base) = showAux (NoNeg x y base)
 showDecimal (Neg x y base) = "-" ++ showAux (NoNeg x y base)
 
+-------------------- showRA -------------------------------------
+-- Obtiene un string que muestra un RealArbitrario en base 10.
+-- Para un numero en base 10 representados como RealArbitrario
+-- simplemente se concatenan los digitos de las listas del
+-- RealArbitrario.
+-- En otro caso, se calcula el equivalente en base 10 del numero,
+-- lo cual puede incurrir en perdida de precision
+--
+-- @param RealArbitrario : Representacion del numero a mostrar
+--
+-- @return : String que representa el equivalente en base 10 del
+-- RealArbitrario suministrado.
+-----------------------------------------------------------------
 showRA::RealArbitrario -> String
 showRA (NoNeg x y 10) = showDecimal (limpiar (NoNeg x y 10))
 showRA (Neg x y 10) = showDecimal (limpiar (Neg x y 10))
 showRA (NoNeg x y base) = show ((fromIntegral (mostrarEnt x base) :: Double)  + (mostrarFrac y base))
 showRA (Neg x y base) = show (negate ((fromIntegral (mostrarEnt x base) :: Double)  + (mostrarFrac y base)))
 
+-------------------- obtenerEnt ---------------------------------
+-- Obtiene representacion como lista de la parte entera de un
+-- RealArbitrario
+--
+-- @param RealArbitrario : numero del cual se quiere la
+-- representacion de su parte entera
+--
+-- @return : representacion de la parte entera del numero
+-- suministrado
+-----------------------------------------------------------------
 obtenerEnt::RealArbitrario -> [Int]
 obtenerEnt (NoNeg x y base) = x
 obtenerEnt (Neg x y base) = x
 
+-------------------- obtenerFrac ---------------------------------
+-- Obtiene representacion como lista de la parte fraccionaria de 
+-- un RealArbitrario
+--
+-- @param RealArbitrario : numero del cual se quiere la
+-- representacion de su parte fraccionaria
+--
+-- @return : representacion de la parte fraccionaria del numero
+-- suministrado
+-----------------------------------------------------------------
 obtenerFrac::RealArbitrario -> [Int]
 obtenerFrac (NoNeg x y base) = y
 obtenerFrac (Neg x y base) = y
