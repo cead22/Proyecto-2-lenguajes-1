@@ -142,6 +142,7 @@ multiNumEnt (x:xs) n base ac =
     [(x * n + ac) `mod` base] ++ (multiNumEnt xs n base c)
     where c = acarreoMult (x * n + ac) base
 
+-- recibe listas al derecho
 multi::[Int] -> [Int] -> Int -> Int -> [Int]
 multi x [] base c = []
 multi x (y:ys) base c =
@@ -270,22 +271,26 @@ elevadoALa x y base 1 = enDigitos y
 elevadoALa x y base n =
     elevadoALa x (limpia (reverse (multi x y base 0))) base (n-1)
 
-
 entALista::Int -> [Int] -> [Int]
 entALista 0 y = y
 entALista x y = [(x `mod` 10)] ++ entALista (x `div` 10) y
 
-piAux2::Int -> Int -> RealArbitrario
-piAux2 n decimales =
+piRA::Int -> Int -> RealArbitrario
+piRA n decimales =
     if n == 0
     then terminoPI 0 decimales
     else 
-        sumaRA (terminoPI n decimales) (piAux2 (n-1) decimales)
+        sumaRA (terminoPI n decimales) (piRA (n-1) decimales)
 
-mostrarEnt::[Int] -> Int -> Int
-mostrarEnt (x:xs) base
+mostrarEnt::[Int] -> Int
+mostrarEnt (x:xs) 
     | (length (x:xs)) == 1 = x
-    | otherwise =  (x + base * (mostrarEnt xs base))
+    | otherwise =  x + 10 * (mostrarEnt xs)
+
+mostrarFrac::[Int] -> Double
+mostrarFrac (x:xs)
+    | (length (x:xs)) == 1 = fromIntegral x :: Double
+    | otherwise =  ((fromIntegral x :: Double) + (mostrarFrac xs)) / (fromIntegral 10 :: Double)
 
 terminoPI::Int -> Int -> RealArbitrario
 terminoPI 0 decimales = NoNeg [3] ([1]++[ 3 | j <- [1..(decimales-1)] ]) 10
@@ -296,11 +301,20 @@ terminoPI n decimales =
       primer_factor = divRA (NoNeg [1] [] 10) dieciseis_i decimales ;
       dieciseis_i = NoNeg (entALista (16^n) []) [] 10 ;
       segundo_factor = restaRA s1 (sumaRA s2 (sumaRA s3 s4)) ;
-      s1 = divRA (NoNeg [4] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (entALista n []) [] 10)) (NoNeg [1] [] 10)) decimales ;
-      s2 = divRA (NoNeg [2] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (entALista n []) [] 10)) (NoNeg [4] [] 10)) decimales ;
-      s3 = divRA (NoNeg [1] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (entALista n []) [] 10)) (NoNeg [5] [] 10)) decimales ;
-      s4 = divRA (NoNeg [1] [] 10) (sumaRA (multRA (NoNeg [8] [] 10) (NoNeg (entALista n []) [] 10)) (NoNeg [6] [] 10)) decimales
+      s1 = divRA real_cuatro (sumaRA (multRA real_ocho (NoNeg ent_l [] 10)) real_uno) decimales ;
+      s2 = divRA real_dos (sumaRA (multRA real_ocho (NoNeg ent_l [] 10)) real_cuatro) decimales ;
+      s3 = divRA real_uno (sumaRA (multRA real_ocho (NoNeg ent_l [] 10)) real_cinco) decimales ;
+      s4 = divRA (NoNeg [1] [] 10) (sumaRA (multRA real_ocho (NoNeg (ent_l) [] 10)) real_seis) decimales ;
+      ent_l = (entALista n []) ;
+      real_ocho   = (NoNeg [8] [] 10) ;
+      real_cuatro = (NoNeg [4] [] 10) ;
+      real_cinco  = (NoNeg [5] [] 10) ;
+      real_seis   = (NoNeg [6] [] 10) ;
+      real_dos    = (NoNeg [2] [] 10) ;
+      real_uno    = (NoNeg [1] [] 10)
     }
+
 
 ge (NoNeg x y base) = x
 gf (NoNeg x y base) = y
+
