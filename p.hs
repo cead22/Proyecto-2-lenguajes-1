@@ -275,13 +275,21 @@ entALista 0 y = y
 entALista x y = [(x `mod` 10)] ++ entALista (x `div` 10) y
 
 piRA::Int -> Int -> RealArbitrario
-piRA n decimales =
+piRA 0 d = NoNeg [] [] 10
+piRA t 0 = NoNeg [3] [] 10
+piRA t d = 
+    NoNeg x y 10
+    where {
+      x = obtenerEnt resultado ;
+      y = take d (obtenerFrac resultado) ;
+      resultado = piAux t d
+    }
+
+piAux::Int -> Int -> RealArbitrario
+piAux n decimales =
     if n == 0
     then terminoPI 0 decimales
-    else 
-        sumaRA (terminoPI n decimales) (piRA (n-1) decimales)
-
-
+    else sumaRA (terminoPI n decimales) (piAux (n-1) decimales)
 
 terminoPI::Int -> Int -> RealArbitrario
 terminoPI 0 decimales = NoNeg [3] ([1]++[ 3 | j <- [1..(decimales-1)] ]) 10
@@ -339,7 +347,6 @@ showRA (NoNeg x y 10) = showDecimal (limpiar (NoNeg x y 10))
 showRA (Neg x y 10) = showDecimal (limpiar (Neg x y 10))
 showRA (NoNeg x y base) = show ((fromIntegral (mostrarEnt x base) :: Double)  + (mostrarFrac y base))
 showRA (Neg x y base) = show (negate ((fromIntegral (mostrarEnt x base) :: Double)  + (mostrarFrac y base)))
-
 
 obtenerEnt::RealArbitrario -> [Int]
 obtenerEnt (NoNeg x y base) = x
