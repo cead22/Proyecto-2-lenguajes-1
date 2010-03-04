@@ -2,16 +2,6 @@ data RealArbitrario = NoNeg [Int] [Int] Int
      		    | Neg [Int] [Int] Int
 		      deriving (Eq)
 
-parteEntera ::[Int] -> Int -> Int -> Int
-parteEntera [] base n = 0
-parteEntera (x:xs) base n = x * (base^n) + parteEntera xs base (n + 1)
-
-parteFraccionaria::[Int] -> Int -> Int -> Double
-parteFraccionaria [] base n = 0
-parteFraccionaria (x:xs) base n = 
-    (fromIntegral x :: Double) * (1 / (fromIntegral base^n :: Double ))
-                                   + parteFraccionaria xs base (n+1)
-
 convertir::RealArbitrario -> RealArbitrario
 convertir (NoNeg x y base) = Neg x y base
 convertir (Neg x y base) = NoNeg x y base
@@ -291,17 +281,7 @@ piRA n decimales =
     else 
         sumaRA (terminoPI n decimales) (piRA (n-1) decimales)
 
-mostrarEnt::[Int] -> Double
-mostrarEnt (x:xs) 
-    | (length (x:xs)) == 1 = (fromIntegral x :: Double)
-    | otherwise = (fromIntegral x :: Double) + 10.0 * (mostrarEnt xs)
 
-mostrarFrac::[Int] -> Double
-mostrarFrac [] = 0
-mostrarFrac (x:xs) = ((fromIntegral x :: Double) + (mostrarFrac xs)) / (fromIntegral 10 :: Double)
-
-showRA::RealArbitrario -> String
-showRA (NoNeg x y base) = show ((mostrarEnt x) + (mostrarFrac y))
 
 terminoPI::Int -> Int -> RealArbitrario
 terminoPI 0 decimales = NoNeg [3] ([1]++[ 3 | j <- [1..(decimales-1)] ]) 10
@@ -324,6 +304,42 @@ terminoPI n decimales =
       real_dos    = (NoNeg [2] [] 10) ;
       real_uno    = (NoNeg [1] [] 10)
     }
+
+mostrarEnt::[Int] -> Int -> Int
+mostrarEnt [] base = 0
+mostrarEnt (x:xs) base
+    | (length (x:xs)) == 1 = x
+    | otherwise = x + base * (mostrarEnt xs base)
+
+mostrarFrac::[Int] -> Int -> Double
+mostrarFrac [] base = 0
+mostrarFrac (x:xs) base = ((fromIntegral x :: Double) + (mostrarFrac xs base)) / (fromIntegral base :: Double)
+
+mostrarLista:: [Int] -> String
+mostrarLista [] = ""
+mostrarLista (x:xs) = (show x) ++ (mostrarLista xs)
+
+showAux::RealArbitrario -> String
+showAux (NoNeg [] [] base) = "0"
+showAux (NoNeg [] (y:ys) base) = "0." ++ (mostrarLista (y:ys))
+showAux (NoNeg (x:xs) [] base) = mostrarLista (x:xs)
+showAux (NoNeg (x:xs) (y:ys) base) =
+    (mostrarLista x_limpia) ++ "." ++ (mostrarLista y_limpia)
+    where {
+      x_limpia = limpia (reverse (x:xs)) ;
+      y_limpia = reverse (limpia (reverse (y:ys)))
+    }
+
+showDecimal::RealArbitrario -> String
+showDecimal (NoNeg x y base) = showAux (NoNeg x y base)
+showDecimal (Neg x y base) = "-" ++ showAux (NoNeg x y base)
+
+showRA::RealArbitrario -> String
+showRA (NoNeg x y 10) = showDecimal (limpiar (NoNeg x y 10))
+showRA (Neg x y 10) = showDecimal (limpiar (Neg x y 10))
+showRA (NoNeg x y base) = show ((fromIntegral (mostrarEnt x base) :: Double)  + (mostrarFrac y base))
+showRA (Neg x y base) = show (negate ((fromIntegral (mostrarEnt x base) :: Double)  + (mostrarFrac y base)))
+
 
 obtenerEnt::RealArbitrario -> [Int]
 obtenerEnt (NoNeg x y base) = x
