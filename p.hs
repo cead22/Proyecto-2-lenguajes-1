@@ -114,8 +114,12 @@ limpia (x:xs) = if x == 0
 -- los ceros no significativos
 -----------------------------------------------------------------         
 limpiar::RealArbitrario -> RealArbitrario
+
 limpiar (NoNeg x y base) = 
     NoNeg (reverse (limpia (reverse x))) (reverse (limpia (reverse y))) base
+
+limpiar (Neg x y base) = 
+    Neg (reverse (limpia (reverse x))) (reverse (limpia (reverse y))) base
 
 
 -------------------mayorEstrictoporNumero -----------------------
@@ -478,6 +482,29 @@ divRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) decimales =
       ceros2 = [ 0 | j <- [1..((length y2) - (length y1))] ]
     }
 
+divRA (Neg x1 y1 base1) (Neg x2 y2 base2) decimales =
+    if compararBase base1 base2
+    then if (sum x2) + (sum y2) == 0
+	 then error "Division por Cero"
+	 else if (length y1 >= length y2)
+	     then (NoNeg (reverse ent1) frac1 base1)
+	     else (NoNeg (reverse ent2) frac2 base1)
+    	else  error "Error en las bases" 
+    
+    where {
+      (ent1,frac1) = divConDecimales ((reverse x1) ++ y1) ((reverse x2) ++ y2 ++ ceros1) base1 decimales ;
+      ceros1 = [ 0 | j <- [1..((length y1) - (length y2))] ] ;
+
+      (ent2,frac2) = divConDecimales ((reverse x1) ++ y1 ++ ceros2) ((reverse x2) ++ y2) base1 decimales ;
+      ceros2 = [ 0 | j <- [1..((length y2) - (length y1))] ]
+    }
+
+divRA (NoNeg x1 y1 base1) (Neg x2 y2 base2) decimales =
+    convertir (divRA (NoNeg x1 y1 base1) (NoNeg x2 y2 base2) decimales)
+
+divRA (Neg x1 y1 base1) (NoNeg x2 y2 base2) decimales =
+    convertir (divRA (Neg x1 y1 base1) (NoNeg x2 y2 base2) decimales)
+
 ----------------------- elevadoALa-------------------------------
 -- Calcula la potencia de un numero expresado como una lista.
 --
@@ -679,8 +706,19 @@ showDecimal (Neg x y base) = "-" ++ showAux (NoNeg x y base)
 showRA::RealArbitrario -> String
 showRA (NoNeg x y 10) = showDecimal (limpiar (NoNeg x y 10))
 showRA (Neg x y 10) = showDecimal (limpiar (Neg x y 10))
-showRA (NoNeg x y base) = show ((fromIntegral (mostrarEnt x base) :: Double)  + (mostrarFrac y base))
-showRA (Neg x y base) = show (negate ((fromIntegral (mostrarEnt x base) :: Double)  + (mostrarFrac y base)))
+
+showRA (NoNeg x [] base)
+    | sum x == 0 = show 0
+    | otherwise = show ((mostrarEnt (reverse (limpia (reverse x))) base))
+
+showRA (NoNeg [] y base)
+    | sum y == 0 = show 0
+    | otherwise = show (mostrarFrac (limpia y) base)
+
+showRA (NoNeg x y base) =
+    show ((fromIntegral (mostrarEnt (reverse (limpia (reverse x))) base) :: Double)  + (mostrarFrac y base))
+
+showRA (Neg x y base) = showRA (limpiar (NoNeg x y base))
 
 -------------------- obtenerEnt ---------------------------------
 -- Obtiene representacion como lista de la parte entera de un
